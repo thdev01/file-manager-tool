@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager Pro v3.0</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="theme-light">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🗂️</div>
+                    <div class="logo-text">
+                        <h1>File Manager Pro</h1>
+                        <span class="version">v3.0</span>
+                    </div>
+                </div>
+                <p class="subtitle">Processamento Avançado de Arquivos Grandes</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="files">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Arquivos</span>
+                </button>
+                <button class="nav-item" data-tab="operations">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Operações</span>
+                </button>
+                <button class="nav-item" data-tab="settings">
+                    <span class="nav-icon">🔧</span>
+                    <span class="nav-text">Configurações</span>
+                </button>
+                <button class="nav-item" data-tab="updates">
+                    <span class="nav-icon">🔄</span>
+                    <span class="nav-text">Atualizações</span>
+                    <span class="update-badge" id="updateBadge" style="display: none;">•</span>
+                </button>
+            </nav>
+
+            <!-- Quick Stats -->
+            <div class="sidebar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Arquivos Selecionados:</span>
+                    <span class="stat-value" id="selectedFilesCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tamanho Total:</span>
+                    <span class="stat-value" id="totalFileSize">0 B</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Modo:</span>
+                    <span class="stat-value" id="processingMode">Padrão</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-info">
+                    <h2 id="currentTabTitle">Seleção de Arquivos</h2>
+                    <p id="currentTabDesc">Selecione os arquivos para processamento</p>
+                </div>
+                <div class="header-actions">
+                    <button id="themeToggle" class="btn btn-ghost">
+                        <span id="themeIcon">🌙</span>
+                        <span id="themeText">Modo Escuro</span>
+                    </button>
+                    <button id="helpBtn" class="btn btn-ghost">
+                        <span>❓</span> Ajuda
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Files Tab -->
+                <section id="files-tab" class="tab-content active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📂 Gerenciamento de Arquivos</h3>
+                            <div class="header-actions">
+                                <span class="file-limit-info">Suporte a arquivos até 300MB</span>
+                                <button id="selectFiles" class="btn btn-primary">
+                                    <span>➕</span> Adicionar Arquivos
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="fileList" class="file-list-container">
+                            <div class="empty-state">
+                                <div class="empty-icon">📄</div>
+                                <h4>Nenhum arquivo selecionado</h4>
+                                <p>Clique em "Adicionar Arquivos" para começar</p>
+                                <div class="supported-formats">
+                                    <small>Formatos suportados: CSV, XLSX, XLS, TXT</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="delimiterCard" class="card" style="display: none;">
+                        <div class="card-header">
+                            <h3>🎯 Configuração de Delimitadores</h3>
+                            <button id="previewData" class="btn btn-outline">
+                                <span>👁️</span> Preview
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <div class="delimiter-grid">
+                                <label class="delimiter-option">
+                                    <input type="radio" name="delimiterOption" value="auto" checked>
+                                    <div class="option-content">
+                                        <span class="option-icon">🤖</span>
+                                        <div class="option-text">
+                                            <strong>Detecção Automática</strong>
+                                            <small>Recomendado para a maioria dos casos</small>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="delimiter-option">
+                                    <input type="radio" name="delimiterOption" value="manual">
+                                    <div class="option-content">
+                                        <span class="option-icon">📋</span>
+                                        <div class="option-text">
+                                            <strong>Seleção Manual</strong>
+                                            <select id="delimiterSelect" class="form-select">
+                                                <option value=",">Vírgula (,)</option>
+                                                <option value=";">Ponto e vírgula (;)</option>
+                                                <option value="\t">Tab (\t)</option>
+                                                <option value="|">Pipe (|)</option>
+                                                <option value=":">Dois pontos (:)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="delimiter-option">
+                                    <input type="radio" name="delimiterOption" value="custom">
+                                    <div class="option-content">
+                                        <span class="option-icon">✏️</span>
+                                        <div class="option-text">
+                                            <strong>Personalizado</strong>
+                                            <input type="text" id="customDelimiter" class="form-input" maxlength="1" placeholder="Digite o delimitador">
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div id="previewSection" class="preview-section"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Operations Tab -->
+                <section id="operations-tab" class="tab-content">
+                    <div class="operations-grid">
+                        <div class="operation-card" data-operation="merge">
+                            <div class="operation-icon">🔗</div>
+                            <h3>Merge de Arquivos</h3>
+                            <p>Combina múltiplos arquivos em um único arquivo. Otimizado para arquivos grandes.</p>
+                            <div class="operation-features">
+                                <span class="feature-tag">Streaming</span>
+                                <span class="feature-tag">Arquivos Grandes</span>
+                            </div>
+                            <button class="btn btn-outline">Selecionar</button>
+                        </div>
+                        
+                        <div class="operation-card" data-operation="convert">
+                            <div class="operation-icon">🔄</div>
+                            <h3>Conversão de Formato</h3>
+                            <p>Converte entre CSV, XLSX e TXT com preservação de dados e formatação.</p>
+                            <div class="operation-features">
+                                <span class="feature-tag">Lote</span>
+                                <span class="feature-tag">Múltiplos Formatos</span>
+                            </div>
+                            <button class="btn btn-outline">Selecionar</button>
+                        </div>
+                        
+                        <div class="operation-card" data-operation="split">
+                            <div class="operation-icon">✂️</div>
+                            <h3>Divisão de Arquivos</h3>
+                            <p>Divide arquivos grandes em partes menores para facilitar o processamento.</p>
+                            <div class="operation-features">
+                                <span class="feature-tag">Streaming</span>
+                                <span class="feature-tag">Personalizado</span>
+                            </div>
+                            <button class="btn btn-outline">Selecionar</button>
+                        </div>
+                    </div>
+
+                    <div id="splitOptionsCard" class="card" style="display: none;">
+                        <div class="card-header">
+                            <h3>✂️ Opções de Divisão</h3>
+                            <div class="info-tooltip" data-tooltip="Divisão otimizada para arquivos grandes">ℹ️</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="split-options">
+                                <label class="split-option">
+                                    <input type="radio" name="splitType" value="lines" checked>
+                                    <div class="option-content">
+                                        <span class="option-icon">📏</span>
+                                        <div class="option-text">
+                                            <strong>Por Número de Linhas</strong>
+                                            <div class="input-group">
+                                                <input type="number" id="splitByLines" class="form-input" min="1" value="10000" placeholder="10000">
+                                                <span class="input-suffix">linhas por arquivo</span>
+                                            </div>
+                                            <small class="input-help">Recomendado: 10.000-50.000 linhas para arquivos grandes</small>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="split-option">
+                                    <input type="radio" name="splitType" value="files">
+                                    <div class="option-content">
+                                        <span class="option-icon">📁</span>
+                                        <div class="option-text">
+                                            <strong>Por Número de Arquivos</strong>
+                                            <div class="input-group">
+                                                <input type="number" id="splitByFiles" class="form-input" min="2" value="5" placeholder="5">
+                                                <span class="input-suffix">arquivos de saída</span>
+                                            </div>
+                                            <small class="input-help">Divide igualmente entre o número especificado de arquivos</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="outputCard" class="card" style="display: none;">
+                        <div class="card-header">
+                            <h3>💾 Configuração de Saída</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="output-section">
+                                <div class="output-format-selection">
+                                    <label>Formato do arquivo de saída:</label>
+                                    <select id="outputFormat" class="form-select">
+                                        <option value="csv">CSV (.csv)</option>
+                                        <option value="xlsx">Excel (.xlsx)</option>
+                                        <option value="txt">Texto (.txt)</option>
+                                    </select>
+                                </div>
+                                
+                                <button id="selectOutput" class="btn btn-secondary">
+                                    <span>📂</span> Escolher Local de Destino
+                                </button>
+                                <div id="outputPath" class="output-path"></div>
+                                
+                                <div class="process-section">
+                                    <button id="processFiles" class="btn btn-success btn-large" disabled>
+                                        <span>✅</span> Processar Arquivos
+                                    </button>
+                                    <div class="processing-info">
+                                        <small id="processingModeInfo">Modo de processamento será determinado automaticamente baseado no tamanho dos arquivos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Tab -->
+                <section id="settings-tab" class="tab-content">
+                    <div class="settings-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🎨 Aparência</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <label class="setting-label">
+                                        <span>Tema da Interface</span>
+                                        <select id="themeSelect" class="form-select">
+                                            <option value="light">Claro</option>
+                                            <option value="dark">Escuro</option>
+                                            <option value="auto">Automático</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>📊 Processamento</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <label class="setting-label">
+                                        <span>Limite para Streaming (MB)</span>
+                                        <input type="number" id="streamingThreshold" class="form-input" min="10" max="1000" value="50">
+                                    </label>
+                                    <small class="setting-help">Arquivos maiores que este limite usarão processamento streaming</small>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="setting-label">
+                                        <span>Mostrar Estatísticas Detalhadas</span>
+                                        <input type="checkbox" id="showDetailedStats" checked>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <label class="setting-label">
+                                        <span>Auto-detectar Encoding</span>
+                                        <input type="checkbox" id="autoDetectEncoding" checked>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🔄 Atualizações</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="setting-item">
+                                    <label class="setting-label">
+                                        <span>Verificar Atualizações Automaticamente</span>
+                                        <input type="checkbox" id="autoUpdates" checked>
+                                    </label>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <label class="setting-label">
+                                        <span>Notificar sobre Pré-lançamentos</span>
+                                        <input type="checkbox" id="prereleaseUpdates">
+                                    </label>
+                                </div>
+
+                                <div class="setting-actions">
+                                    <button id="checkUpdatesManual" class="btn btn-outline">
+                                        <span>🔍</span> Verificar Agora
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Updates Tab -->
+                <section id="updates-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>🔄 Sistema de Atualizações</h3>
+                            <div class="update-status" id="updateStatusBadge">
+                                <span class="status-indicator"></span>
+                                <span class="status-text">Verificando...</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="update-info">
+                                <div class="current-version">
+                                    <h4>Versão Atual</h4>
+                                    <span class="version-number" id="currentVersion">3.0.0</span>
+                                </div>
+                                
+                                <div id="updateAvailable" class="update-available" style="display: none;">
+                                    <h4>Nova Versão Disponível</h4>
+                                    <div class="new-version-info">
+                                        <span class="version-number" id="newVersion"></span>
+                                        <div class="release-notes" id="releaseNotes"></div>
+                                    </div>
+                                    
+                                    <div class="update-actions">
+                                        <button id="downloadUpdate" class="btn btn-primary">
+                                            <span>⬇️</span> Baixar Atualização
+                                        </button>
+                                        <button id="skipUpdate" class="btn btn-ghost">
+                                            Pular Esta Versão
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="updateDownloaded" class="update-downloaded" style="display: none;">
+                                    <h4>Atualização Baixada</h4>
+                                    <p>A nova versão foi baixada e está pronta para instalação.</p>
+                                    
+                                    <div class="update-actions">
+                                        <button id="installUpdate" class="btn btn-success">
+                                            <span>🔄</span> Instalar e Reiniciar
+                                        </button>
+                                        <button id="installLater" class="btn btn-ghost">
+                                            Instalar Mais Tarde
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="updateProgress" class="update-progress" style="display: none;">
+                                    <h4>Baixando Atualização</h4>
+                                    <div class="progress-container">
+                                        <div class="progress-bar">
+                                            <div id="updateProgressFill" class="progress-fill"></div>
+                                        </div>
+                                        <span id="updateProgressText" class="progress-text">0%</span>
+                                    </div>
+                                    <div class="download-details">
+                                        <span id="downloadSpeed"></span>
+                                        <span id="downloadSize"></span>
+                                    </div>
+                                </div>
+
+                                <div class="update-log">
+                                    <h4>Log de Atualizações</h4>
+                                    <div id="updateLog" class="log-container">
+                                        <div class="log-entry">
+                                            <span class="log-time">Aplicativo iniciado</span>
+                                            <span class="log-message">Sistema de atualizações inicializado</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <div id="statusMessage" class="status-message">Pronto</div>
+            <div id="updateStatus" class="update-status-mini" style="display: none;">
+                <span class="update-indicator"></span>
+                <span class="update-text"></span>
+            </div>
+        </div>
+        <div class="status-right">
+            <div id="progressContainer" class="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <span id="progressText" class="progress-text">0%</span>
+            </div>
+            <div class="connection-status">
+                <span id="connectionIndicator" class="connection-indicator online">●</span>
+                <span>Online</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Preview -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👁️ Preview dos Dados</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Processando Arquivos</h3>
+            <p id="loadingMessage">Preparando processamento...</p>
+            <div class="loading-progress">
+                <div class="progress-bar">
+                    <div id="loadingProgressFill" class="progress-fill"></div>
+                </div>
+                <span id="loadingProgressText">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        let selectedFiles = [];
+        let currentOperation = '';
+        let outputPath = '';
+        let currentDelimiter = ',';
+        let fileStats = new Map();
+        let currentTheme = 'light';
+        let streamingThreshold = 50 * 1024 * 1024; // 50MB
+
+        // DOM Elements
+        const tabs = document.querySelectorAll('.nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const selectFilesBtn = document.getElementById('selectFiles');
+        const fileList = document.getElementById('fileList');
+        const delimiterCard = document.getElementById('delimiterCard');
+        const previewSection = document.getElementById('previewSection');
+        const operationCards = document.querySelectorAll('.operation-card');
+        const splitOptionsCard = document.getElementById('splitOptionsCard');
+        const outputCard = document.getElementById('outputCard');
+        const selectOutputBtn = document.getElementById('selectOutput');
+        const outputPathDiv = document.getElementById('outputPath');
+        const processBtn = document.getElementById('processFiles');
+        const statusMessage = document.getElementById('statusMessage');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeSelect = document.getElementById('themeSelect');
+        const outputFormat = document.getElementById('outputFormat');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeApp();
+            setupEventListeners();
+            await loadTheme();
+            initializeUpdater();
+        });
+
+        async function initializeApp() {
+            // Load settings
+            const savedThreshold = localStorage.getItem('streamingThreshold');
+            if (savedThreshold) {
+                streamingThreshold = parseInt(savedThreshold) * 1024 * 1024;
+                document.getElementById('streamingThreshold').value = parseInt(savedThreshold);
+            }
+
+            // Set split inputs initial state
+            document.getElementById('splitByFiles').disabled = true;
+            
+            // Update version display
+            const version = require('./package.json').version;
+            document.getElementById('currentVersion').textContent = version;
+        }
+
+        function setupEventListeners() {
+            // Tab Navigation
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    switchTab(tabId);
+                });
+            });
+
+            // File operations
+            selectFilesBtn.addEventListener('click', selectFiles);
+            selectOutputBtn.addEventListener('click', selectOutputPath);
+            processBtn.addEventListener('click', processFiles);
+
+            // Operation cards
+            operationCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const operation = card.dataset.operation;
+                    setOperation(operation);
+                });
+            });
+
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
+
+            // Delimiter change listeners
+            document.querySelectorAll('input[name="delimiterOption"]').forEach(radio => {
+                radio.addEventListener('change', updateDelimiter);
+            });
+            
+            document.getElementById('delimiterSelect').addEventListener('change', updateDelimiter);
+            document.getElementById('customDelimiter').addEventListener('input', updateDelimiter);
+
+            // Split options
+            document.querySelectorAll('input[name="splitType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const linesInput = document.getElementById('splitByLines');
+                    const filesInput = document.getElementById('splitByFiles');
+                    
+                    if (this.value === 'lines') {
+                        linesInput.disabled = false;
+                        filesInput.disabled = true;
+                    } else {
+                        linesInput.disabled = true;
+                        filesInput.disabled = false;
+                    }
+                });
+            });
+
+            // Settings
+            document.getElementById('streamingThreshold').addEventListener('change', (e) => {
+                streamingThreshold = parseInt(e.target.value) * 1024 * 1024;
+                localStorage.setItem('streamingThreshold', e.target.value);
+                updateProcessingModeInfo();
+            });
+
+            // Preview button
+            document.getElementById('previewData').addEventListener('click', showPreview);
+
+            // Output format change
+            outputFormat.addEventListener('change', updateOutputPath);
+
+            // Modal close
+            document.querySelector('.modal-close').addEventListener('click', closeModal);
+            document.getElementById('previewModal').addEventListener('click', (e) => {
+                if (e.target.id === 'previewModal') closeModal();
+            });
+
+            // Update buttons
+            document.getElementById('checkUpdatesManual').addEventListener('click', checkForUpdates);
+            document.getElementById('downloadUpdate').addEventListener('click', downloadUpdate);
+            document.getElementById('installUpdate').addEventListener('click', installUpdate);
+        }
+
+        // Theme Management
+        async function loadTheme() {
+            try {
+                const themeData = await ipcRenderer.invoke('get-theme');
+                currentTheme = themeData.current;
+                applyTheme(currentTheme);
+                themeSelect.value = currentTheme;
+            } catch (error) {
+                console.error('Error loading theme:', error);
+            }
+        }
+
+        async function setTheme(theme) {
+            try {
+                const result = await ipcRenderer.invoke('set-theme', theme);
+                if (result.success) {
+                    currentTheme = theme;
+                    applyTheme(theme);
+                }
+            } catch (error) {
+                console.error('Error setting theme:', error);
+            }
+        }
+
+        function toggleTheme() {
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        function applyTheme(theme) {
+            document.body.className = `theme-${theme}`;
+            
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (theme === 'dark') {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Modo Claro';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Modo Escuro';
+            }
+        }
+
+        // IPC Event Listeners
+        ipcRenderer.on('theme-changed', (event, data) => {
+            applyTheme(data.theme);
+        });
+
+        ipcRenderer.on('progress-update', (event, data) => {
+            updateProgress(data.percentage || Math.round((data.current / data.total) * 100));
+            
+            if (data.current && data.total) {
+                updateStatus(`Processando arquivo ${data.current} de ${data.total}...`, 'info');
+            }
+        });
+
+        ipcRenderer.on('update-status', (event, message) => {
+            addUpdateLog(message);
+        });
+
+        ipcRenderer.on('update-download-progress', (event, data) => {
+            updateDownloadProgress(data);
+        });
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            tabs.forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+            
+            const titles = {
+                files: 'Seleção de Arquivos',
+                operations: 'Operações',
+                settings: 'Configurações',
+                updates: 'Atualizações'
+            };
+            
+            const descriptions = {
+                files: 'Selecione os arquivos para processamento',
+                operations: 'Escolha a operação desejada',
+                settings: 'Configure as preferências do aplicativo',
+                updates: 'Gerencie atualizações do aplicativo'
+            };
+            
+            document.getElementById('currentTabTitle').textContent = titles[tabId];
+            document.getElementById('currentTabDesc').textContent = descriptions[tabId];
+        }
+
+        // File Management
+        async function selectFiles() {
+            const result = await ipcRenderer.invoke('select-files');
+            
+            if (!result.canceled && result.filePaths.length > 0) {
+                selectedFiles = result.filePaths;
+                await displayFileList();
+                await detectDelimiters();
+                enableOperations();
+                updateFileStats();
+            }
+        }
+
+        async function displayFileList() {
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📄</div>
+                        <h4>Nenhum arquivo selecionado</h4>
+                        <p>Clique em "Adicionar Arquivos" para começar</p>
+                        <div class="supported-formats">
+                            <small>Formatos suportados: CSV, XLSX, XLS, TXT</small>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            fileList.innerHTML = '<div class="file-grid"></div>';
+            const fileGrid = fileList.querySelector('.file-grid');
+
+            let totalSize = 0;
+            let largeFilesCount = 0;
+
+            for (let index = 0; index < selectedFiles.length; index++) {
+                const filePath = selectedFiles[index];
+                const fileName = filePath.split(/[\\/]/).pop();
+                const fileExt = fileName.split('.').pop().toUpperCase();
+                
+                // Analyze file (enhanced for large files)
+                const stats = await ipcRenderer.invoke('analyze-file', filePath);
+                fileStats.set(filePath, stats);
+                totalSize += stats.size || 0;
+                
+                if (stats.size > streamingThreshold) {
+                    largeFilesCount++;
+                }
+                
+                const isLargeFile = stats.size > streamingThreshold;
+                const fileCard = document.createElement('div');
+                fileCard.className = `file-card ${isLargeFile ? 'large-file' : ''}`;
+                fileCard.innerHTML = `
+                    <div class="file-header">
+                        <div class="file-badges">
+                            <span class="file-extension ${fileExt.toLowerCase()}">${fileExt}</span>
+                            ${isLargeFile ? '<span class="large-file-badge">GRANDE</span>' : ''}
+                            ${stats.streaming ? '<span class="streaming-badge">STREAMING</span>' : ''}
+                        </div>
+                        <button onclick="removeFile(${index})" class="btn-remove" title="Remover arquivo">
+                            <span>✖</span>
+                        </button>
+                    </div>
+                    <div class="file-body">
+                        <h4 class="file-name" title="${fileName}">${fileName}</h4>
+                        <div class="file-stats">
+                            ${stats.error ? 
+                                '<span class="file-error">Erro ao ler arquivo</span>' : 
+                                `
+                                <div class="stat-item">
+                                    <span class="stat-label">Linhas:</span>
+                                    <span class="stat-value">${stats.totalRows?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Colunas:</span>
+                                    <span class="stat-value">${stats.columns || 'N/A'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Tamanho:</span>
+                                    <span class="stat-value">${formatFileSize(stats.size)}</span>
+                                </div>
+                                ${isLargeFile ? '<div class="stat-item"><span class="stat-label">Modo:</span><span class="stat-value streaming">Streaming</span></div>' : ''}
+                                `
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                fileGrid.appendChild(fileCard);
+            }
+
+            // Update processing mode info
+            updateProcessingModeInfo();
+        }
+
+        function updateFileStats() {
+            let totalSize = 0;
+            let largeFilesCount = 0;
+
+            selectedFiles.forEach(filePath => {
+                const stats = fileStats.get(filePath);
+                if (stats && stats.size) {
+                    totalSize += stats.size;
+                    if (stats.size > streamingThreshold) {
+                        largeFilesCount++;
+                    }
+                }
+            });
+
+            document.getElementById('selectedFilesCount').textContent = selectedFiles.length;
+            document.getElementById('totalFileSize').textContent = formatFileSize(totalSize);
+            
+            const mode = largeFilesCount > 0 ? 'Streaming' : 'Padrão';
+            document.getElementById('processingMode').textContent = mode;
+        }
+
+        function updateProcessingModeInfo() {
+            let totalSize = 0;
+            selectedFiles.forEach(filePath => {
+                const stats = fileStats.get(filePath);
+                if (stats && stats.size) {
+                    totalSize += stats.size;
+                }
+            });
+
+            const useStreaming = totalSize > streamingThreshold;
+            const modeInfo = document.getElementById('processingModeInfo');
+            
+            if (modeInfo) {
+                if (useStreaming) {
+                    modeInfo.innerHTML = `<strong>Modo Streaming:</strong> Otimizado para arquivos grandes (${formatFileSize(totalSize)})`;
+                    modeInfo.className = 'processing-info streaming';
+                } else {
+                    modeInfo.innerHTML = `<strong>Modo Padrão:</strong> Processamento em memória (${formatFileSize(totalSize)})`;
+                    modeInfo.className = 'processing-info standard';
+                }
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function removeFile(index) {
+            const removedFile = selectedFiles[index];
+            selectedFiles.splice(index, 1);
+            fileStats.delete(removedFile);
+            
+            if (selectedFiles.length > 0) {
+                displayFileList();
+                detectDelimiters();
+                updateFileStats();
+            } else {
+                displayFileList();
+                delimiterCard.style.display = 'none';
+                disableOperations();
+                updateFileStats();
+            }
+        }
+
+        // Enhanced delimiter detection
+        async function detectDelimiters() {
+            if (selectedFiles.length === 0) return;
+            
+            delimiterCard.style.display = 'block';
+            
+            const csvFiles = selectedFiles.filter(f => 
+                f.toLowerCase().endsWith('.csv') || f.toLowerCase().endsWith('.txt')
+            );
+            
+            if (csvFiles.length > 0) {
+                const result = await ipcRenderer.invoke('detect-delimiter', csvFiles[0]);
+                if (result && !result.error) {
+                    currentDelimiter = result.delimiter;
+                    displayPreview(result);
+                }
+            }
+        }
+
+        function displayPreview(result) {
+            const delimiterNames = {
+                ',': 'Vírgula (,)',
+                ';': 'Ponto e vírgula (;)',
+                '\t': 'Tab (\\t)',
+                '|': 'Pipe (|)',
+                ':': 'Dois pontos (:)'
+            };
+            
+            previewSection.innerHTML = `
+                <div class="preview-header">
+                    <h4>👁️ Preview dos Dados</h4>
+                    <div class="preview-info">
+                        <span class="info-badge">Delimitador: ${delimiterNames[result.delimiter] || result.delimiter}</span>
+                        <span class="info-badge">Total: ${result.totalLines?.toLocaleString()} linhas</span>
+                        <span class="info-badge">Colunas: ${result.fields.length}</span>
+                    </div>
+                </div>
+                <div class="preview-table-container">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                ${result.fields.map(field => `<th>${field}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${result.preview.slice(0, 3).map(row => `
+                                <tr>
+                                    ${result.fields.map(field => `<td>${row[field] || ''}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ${result.preview.length > 3 ? '<p class="preview-note">Mostrando apenas as primeiras 3 linhas</p>' : ''}
+            `;
+        }
+
+        function updateDelimiter() {
+            const option = document.querySelector('input[name="delimiterOption"]:checked').value;
+            
+            if (option === 'auto') {
+                detectDelimiters();
+            } else if (option === 'manual') {
+                currentDelimiter = document.getElementById('delimiterSelect').value;
+                if (currentDelimiter === '\\t') currentDelimiter = '\t';
+            } else if (option === 'custom') {
+                currentDelimiter = document.getElementById('customDelimiter').value || ',';
+            }
+        }
+
+        // Operations Management
+        function enableOperations() {
+            operationCards.forEach(card => {
+                card.classList.remove('disabled');
+                const btn = card.querySelector('.btn');
+                btn.disabled = false;
+            });
+        }
+
+        function disableOperations() {
+            operationCards.forEach(card => {
+                card.classList.add('disabled');
+                const btn = card.querySelector('.btn');
+                btn.disabled = true;
+            });
+            outputCard.style.display = 'none';
+            splitOptionsCard.style.display = 'none';
+        }
+
+        function setOperation(operation) {
+            currentOperation = operation;
+            
+            operationCards.forEach(card => {
+                card.classList.remove('selected');
+                if (card.dataset.operation === operation) {
+                    card.classList.add('selected');
+                }
+            });
+            
+            if (operation === 'split') {
+                splitOptionsCard.style.display = 'block';
+                // For split operation, we save to a folder, not a file
+                selectOutputBtn.textContent = '📂 Escolher Pasta de Destino';
+            } else {
+                splitOptionsCard.style.display = 'none';
+                selectOutputBtn.textContent = '📂 Escolher Local de Destino';
+            }
+            
+            outputCard.style.display = 'block';
+            
+            const operationNames = {
+                merge: '🔗 Merge de arquivos selecionado',
+                convert: '🔄 Conversão de arquivos selecionado',
+                split: '✂️ Divisão de arquivos selecionado'
+            };
+            
+            updateStatus(operationNames[operation], 'info');
+            
+            if (!document.getElementById('operations-tab').classList.contains('active')) {
+                switchTab('operations');
+            }
+        }
+
+        // Enhanced output path selection with format support
+        async function selectOutputPath() {
+            let result;
+            
+            if (currentOperation === 'split') {
+                // For split operation, select folder
+                result = await ipcRenderer.invoke('select-folder');
+                if (!result.canceled && result.filePaths.length > 0) {
+                    outputPath = result.filePaths[0];
+                    displayOutputPath();
+                    processBtn.disabled = false;
+                }
+            } else {
+                // For other operations, select file with proper extension
+                const format = outputFormat.value;
+                const extension = format === 'csv' ? '.csv' : format === 'xlsx' ? '.xlsx' : '.txt';
+                
+                result = await ipcRenderer.invoke('save-file', {
+                    defaultPath: `output${extension}`
+                });
+                
+                if (!result.canceled && result.filePath) {
+                    // Ensure correct extension
+                    outputPath = result.filePath;
+                    if (!outputPath.endsWith(extension)) {
+                        outputPath += extension;
+                    }
+                    displayOutputPath();
+                    processBtn.disabled = false;
+                }
+            }
+        }
+
+        function displayOutputPath() {
+            if (currentOperation === 'split') {
+                outputPathDiv.innerHTML = `
+                    <span class="output-info">
+                        📁 ${outputPath}
+                        <small>Os arquivos divididos serão salvos nesta pasta</small>
+                    </span>
+                `;
+            } else {
+                outputPathDiv.innerHTML = `
+                    <span class="output-info">
+                        📄 ${outputPath}
+                        <small>Formato: ${outputFormat.options[outputFormat.selectedIndex].text}</small>
+                    </span>
+                `;
+            }
+        }
+
+        function updateOutputPath() {
+            if (outputPath && currentOperation !== 'split') {
+                const format = outputFormat.value;
+                const basePath = outputPath.replace(/\.[^/.]+$/, "");
+                const extension = format === 'csv' ? '.csv' : format === 'xlsx' ? '.xlsx' : '.txt';
+                outputPath = basePath + extension;
+                displayOutputPath();
+            }
+        }
+
+        // Enhanced file processing with loading overlay
+        async function processFiles() {
+            if (!outputPath || selectedFiles.length === 0) return;
+            
+            showLoadingOverlay();
+            processBtn.disabled = true;
+            updateStatus('⏳ Iniciando processamento...', 'info');
+            
+            const splitOptions = {};
+            if (currentOperation === 'split') {
+                const splitType = document.querySelector('input[name="splitType"]:checked').value;
+                splitOptions.type = splitType;
+                
+                if (splitType === 'lines') {
+                    splitOptions.value = document.getElementById('splitByLines').value;
+                } else {
+                    splitOptions.value = document.getElementById('splitByFiles').value;
+                }
+            }
+            
+            const options = {
+                filePaths: selectedFiles,
+                operation: currentOperation,
+                outputPath,
+                delimiter: currentDelimiter,
+                customDelimiter: document.getElementById('customDelimiter').value,
+                splitOptions
+            };
+            
+            try {
+                const result = await ipcRenderer.invoke('process-files', options);
+                
+                if (result.success) {
+                    updateStatus(`✅ ${result.message}`, 'success');
+                    updateProgress(100);
+                    
+                    // Show results details if available
+                    if (result.details || result.results) {
+                        setTimeout(() => {
+                            showResultsModal(result);
+                        }, 1000);
+                    }
+                } else {
+                    updateStatus(`❌ ${result.message}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Erro: ${error.message}`, 'error');
+            }
+            
+            setTimeout(() => {
+                hideLoadingOverlay();
+                processBtn.disabled = false;
+            }, 2000);
+        }
+
+        // UI Helper Functions
+        function showLoadingOverlay() {
+            loadingOverlay.style.display = 'flex';
+            document.getElementById('loadingMessage').textContent = 'Preparando processamento...';
+            updateLoadingProgress(0);
+        }
+
+        function hideLoadingOverlay() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function updateLoadingProgress(percentage) {
+            const fill = document.getElementById('loadingProgressFill');
+            const text = document.getElementById('loadingProgressText');
+            
+            fill.style.width = `${percentage}%`;
+            text.textContent = `${percentage}%`;
+        }
+
+        function showPreview() {
+            const modal = document.getElementById('previewModal');
+            const modalBody = document.getElementById('modalBody');
+            
+            // Get current preview data
+            const previewData = previewSection.innerHTML;
+            
+            if (previewData.trim()) {
+                modalBody.innerHTML = previewData;
+                modal.classList.add('active');
+            } else {
+                updateStatus('Nenhum preview disponível', 'warning');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('previewModal').classList.remove('active');
+        }
+
+        function showResultsModal(result) {
+            const modal = document.getElementById('previewModal');
+            const modalBody = document.getElementById('modalBody');
+            
+            let content = '<div class="results-summary">';
+            content += `<h4>✅ Processamento Concluído</h4>`;
+            content += `<p>${result.message}</p>`;
+            
+            if (result.totalRows) {
+                content += `<p><strong>Total de linhas processadas:</strong> ${result.totalRows.toLocaleString()}</p>`;
+            }
+            
+            if (result.results && result.results.length > 0) {
+                content += '<div class="results-details"><h5>Detalhes:</h5><ul>';
+                result.results.forEach(item => {
+                    if (item.chunks) {
+                        content += `<li><strong>${item.file}:</strong> ${item.totalChunks} partes criadas</li>`;
+                    } else {
+                        content += `<li><strong>${item.input || item.file}:</strong> ${item.rows ? item.rows.toLocaleString() + ' linhas' : 'processado'}</li>`;
+                    }
+                });
+                content += '</ul></div>';
+            }
+            
+            content += '</div>';
+            
+            modalBody.innerHTML = content;
+            modal.classList.add('active');
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+        }
+
+        function showProgress() {
+            progressContainer.style.display = 'flex';
+            updateProgress(0);
+        }
+
+        function hideProgress() {
+            progressContainer.style.display = 'none';
+        }
+
+        function updateProgress(percentage) {
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = `${percentage}%`;
+            
+            // Update loading overlay if visible
+            if (loadingOverlay.style.display === 'flex') {
+                updateLoadingProgress(percentage);
+                
+                if (percentage > 0 && percentage < 100) {
+                    document.getElementById('loadingMessage').textContent = 'Processando arquivos...';
+                } else if (percentage === 100) {
+                    document.getElementById('loadingMessage').textContent = 'Finalizando...';
+                }
+            }
+        }
+
+        // Update System Functions
+        async function initializeUpdater() {
+            try {
+                updateStatus('Verificando atualizações...', 'info');
+                const updateStatus = await checkForUpdates();
+                
+                if (updateStatus.available) {
+                    showUpdateAvailable(updateStatus.info);
+                } else {
+                    addUpdateLog('Aplicativo está atualizado');
+                }
+            } catch (error) {
+                console.error('Error initializing updater:', error);
+                addUpdateLog('Erro ao verificar atualizações');
+            }
+        }
+
+        async function checkForUpdates() {
+            try {
+                addUpdateLog('Verificando atualizações...');
+                const result = await ipcRenderer.invoke('check-for-updates');
+                
+                if (result.available) {
+                    document.getElementById('updateBadge').style.display = 'block';
+                    showUpdateAvailable(result.info);
+                    addUpdateLog(`Nova versão ${result.info.version} disponível`);
+                } else {
+                    addUpdateLog('Aplicativo está atualizado');
+                    hideUpdateNotifications();
+                }
+                
+                return result;
+            } catch (error) {
+                addUpdateLog(`Erro ao verificar atualizações: ${error.message}`);
+                return { available: false, error: error.message };
+            }
+        }
+
+        async function downloadUpdate() {
+            try {
+                addUpdateLog('Iniciando download da atualização...');
+                document.getElementById('updateProgress').style.display = 'block';
+                document.getElementById('updateAvailable').style.display = 'none';
+                
+                const result = await ipcRenderer.invoke('download-update');
+                
+                if (result.success) {
+                    addUpdateLog('Download iniciado com sucesso');
+                } else {
+                    addUpdateLog(`Erro no download: ${result.message}`);
+                    document.getElementById('updateProgress').style.display = 'none';
+                    document.getElementById('updateAvailable').style.display = 'block';
+                }
+            } catch (error) {
+                addUpdateLog(`Erro no download: ${error.message}`);
+            }
+        }
+
+        async function installUpdate() {
+            try {
+                addUpdateLog('Instalando atualização...');
+                const result = await ipcRenderer.invoke('install-update');
+                
+                if (result.success) {
+                    addUpdateLog('Atualização será instalada após reiniciar');
+                } else {
+                    addUpdateLog(`Erro na instalação: ${result.message}`);
+                }
+            } catch (error) {
+                addUpdateLog(`Erro na instalação: ${error.message}`);
+            }
+        }
+
+        function showUpdateAvailable(info) {
+            const updateAvailable = document.getElementById('updateAvailable');
+            const newVersionSpan = document.getElementById('newVersion');
+            const releaseNotes = document.getElementById('releaseNotes');
+            
+            newVersionSpan.textContent = info.version;
+            
+            if (info.releaseNotes) {
+                releaseNotes.innerHTML = `<p>${info.releaseNotes}</p>`;
+            } else {
+                releaseNotes.innerHTML = '<p>Consulte o changelog para mais informações.</p>';
+            }
+            
+            updateAvailable.style.display = 'block';
+            updateStatusBadge('update-available', 'Nova versão disponível');
+        }
+
+        function hideUpdateNotifications() {
+            document.getElementById('updateAvailable').style.display = 'none';
+            document.getElementById('updateDownloaded').style.display = 'none';
+            document.getElementById('updateProgress').style.display = 'none';
+            document.getElementById('updateBadge').style.display = 'none';
+            updateStatusBadge('up-to-date', 'Atualizado');
+        }
+
+        function updateStatusBadge(status, text) {
+            const badge = document.getElementById('updateStatusBadge');
+            const indicator = badge.querySelector('.status-indicator');
+            const statusText = badge.querySelector('.status-text');
+            
+            badge.className = `update-status ${status}`;
+            statusText.textContent = text;
+        }
+
+        function updateDownloadProgress(data) {
+            const progressFill = document.getElementById('updateProgressFill');
+            const progressText = document.getElementById('updateProgressText');
+            const downloadSpeed = document.getElementById('downloadSpeed');
+            const downloadSize = document.getElementById('downloadSize');
+            
+            progressFill.style.width = `${data.percent}%`;
+            progressText.textContent = `${data.percent}%`;
+            
+            if (downloadSpeed) {
+                downloadSpeed.textContent = `Velocidade: ${formatBytes(data.bytesPerSecond)}/s`;
+            }
+            
+            if (downloadSize) {
+                downloadSize.textContent = `${formatBytes(data.transferred)} / ${formatBytes(data.total)}`;
+            }
+            
+            if (data.percent === 100) {
+                setTimeout(() => {
+                    document.getElementById('updateProgress').style.display = 'none';
+                    document.getElementById('updateDownloaded').style.display = 'block';
+                    addUpdateLog('Download concluído - Pronto para instalar');
+                    updateStatusBadge('ready-to-install', 'Pronto para instalar');
+                }, 1000);
+            }
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function addUpdateLog(message) {
+            const logContainer = document.getElementById('updateLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            
+            logEntry.innerHTML = `
+                <span class="log-time">${timeString}</span>
+                <span class="log-message">${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Utility Functions
+        window.removeFile = removeFile; // Make it globally accessible for onclick handlers
+    </script>
+</body>
+</html>

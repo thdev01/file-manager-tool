@@ -1,0 +1,75 @@
+{
+  "name": "file-manager-tool",
+  "version": "3.0.0",
+  "description": "Ferramenta avançada para merge, conversão e divisão de arquivos CSV/XLSX/TXT com suporte a arquivos grandes (300MB+)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "dev": "electron . --dev",
+    "publish": "electron-builder --publish=always"
+  },
+  "build": {
+    "appId": "com.filemanager.tool",
+    "productName": "File Manager Pro",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "src/**/*",
+      "modules/**/*",
+      "node_modules/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "your-username",
+      "repo": "file-manager-tool"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "csv-parser": "^3.2.0",
+    "csv-writer": "^1.6.0",
+    "papaparse": "^5.5.3",
+    "xlsx": "^0.18.5",
+    "electron-updater": "^6.3.9",
+    "electron-log": "^5.2.0",
+    "fs-extra": "^11.2.0",
+    "stream-transform": "^3.4.0"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "keywords": [
+    "csv",
+    "xlsx",
+    "file-manager",
+    "data-processing",
+    "electron",
+    "streaming",
+    "large-files"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "type": "commonjs"
+}

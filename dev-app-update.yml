@@ -1,0 +1,4 @@
+provider: github
+owner: thdev01
+repo: file-manager-tool
+updaterCacheDirName: file-manager-updater-dev
