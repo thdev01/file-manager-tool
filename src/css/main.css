@@ -1,0 +1,68 @@
+/**
+ * File Manager Pro v3.0 - Main Stylesheet
+ * Modular CSS Architecture with Design System
+ * 
+ * @author thdev-agent
+ * @version 3.0.0
+ */
+
+/* Import order is important - load variables first, then base styles, then components */
+
+/* 1. Design System Foundation */
+@import 'variables.css';  /* CSS Custom Properties & Design Tokens */
+@import 'base.css';       /* Reset, Typography, Base Elements */
+
+/* 2. Layout System */
+@import 'layout.css';     /* App Layout, Sidebar, Main Content */
+
+/* 3. Component Library */
+@import 'components/buttons.css';     /* Button Components */
+@import 'components/forms.css';       /* Form Elements */
+@import 'components/cards.css';       /* Card Components */
+@import 'components/modals.css';      /* Modal & Overlay Components */
+@import 'components/progress.css';    /* Progress Indicators */
+@import 'components/tables.css';      /* Table Components */
+
+/* 4. Feature-Specific Styles */
+@import 'features/file-management.css';  /* File List, File Cards */
+@import 'features/operations.css';       /* Operation Cards & Workflows */
+@import 'features/settings.css';         /* Settings Interface */
+@import 'features/updates.css';          /* Update System UI */
+
+/* 5. Utility Classes */
+@import 'utilities.css';              /* Spacing, Display, etc. */
+
+/* 6. Animations */
+@import 'animations.css';             /* Keyframes & Transitions */
+
+/**
+ * CSS Architecture Guidelines:
+ * 
+ * 1. BEM Methodology: Use Block__Element--Modifier naming
+ * 2. Component-First: Group related styles in component files
+ * 3. Custom Properties: Use CSS variables for all design tokens
+ * 4. Mobile-First: Write responsive styles mobile-first
+ * 5. Accessibility: Ensure WCAG 2.1 AA compliance
+ * 6. Performance: Minimize CSS bundle size and complexity
+ * 
+ * File Structure:
+ * css/
+ * ├── main.css              # Entry point (this file)
+ * ├── variables.css         # Design tokens & custom properties
+ * ├── base.css             # Reset, typography, base elements
+ * ├── layout.css           # App layout, grid system
+ * ├── utilities.css        # Utility classes
+ * ├── animations.css       # Keyframes & animations
+ * ├── components/          # Reusable UI components
+ * │   ├── buttons.css
+ * │   ├── forms.css
+ * │   ├── cards.css
+ * │   ├── modals.css
+ * │   ├── progress.css
+ * │   └── tables.css
+ * └── features/            # Feature-specific styles
+ *     ├── file-management.css
+ *     ├── operations.css
+ *     ├── settings.css
+ *     └── updates.css
+ */

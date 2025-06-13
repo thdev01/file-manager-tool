@@ -8,6 +8,7 @@ const FileProcessor = require('./modules/file-processor');
 const ThemeManager = require('./modules/theme-manager');
 const UpdateManager = require('./modules/update-manager');
 const StreamingProcessor = require('./modules/streaming-processor');
+const errorHandler = require('./modules/error-handler');
 
 let mainWindow;
 let fileProcessor;
@@ -27,9 +28,15 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false,
+      preload: path.join(__dirname, 'src', 'preload.js'),
+      sandbox: false, // Disable sandbox to allow preload script access
+      spellcheck: false
     },
     icon: path.join(__dirname, 'assets/icon.png'),
     title: 'File Manager Pro v3.0 - Large File Support',
@@ -87,43 +94,130 @@ app.on('activate', () => {
   }
 });
 
-// IPC Handlers
+// Input validation utilities
+function validateString(value, maxLength = 1000) {
+  return typeof value === 'string' && value.length <= maxLength && value.trim().length > 0;
+}
+
+function validateArray(value, maxItems = 100) {
+  return Array.isArray(value) && value.length <= maxItems;
+}
+
+function validateFilePath(filePath) {
+  if (!validateString(filePath, 500)) return false;
+  
+  // Basic path traversal protection
+  const normalizedPath = path.normalize(filePath);
+  return !normalizedPath.includes('..') && 
+         !normalizedPath.startsWith('/') && 
+         !normalizedPath.match(/^[a-zA-Z]:\\/);
+}
+
+// IPC Handlers with validation
 ipcMain.handle('select-files', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openFile', 'multiSelections'],
-    filters: [
-      { name: 'Arquivos Suportados', extensions: ['csv', 'xlsx', 'xls', 'txt'] },
-      { name: 'CSV', extensions: ['csv'] },
-      { name: 'Excel', extensions: ['xlsx', 'xls'] },
-      { name: 'Texto', extensions: ['txt'] },
-      { name: 'Todos', extensions: ['*'] }
-    ]
-  });
-  return result;
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile', 'multiSelections'],
+      filters: [
+        { name: 'Arquivos Suportados', extensions: ['csv', 'xlsx', 'xls', 'txt'] },
+        { name: 'CSV', extensions: ['csv'] },
+        { name: 'Excel', extensions: ['xlsx', 'xls'] },
+        { name: 'Texto', extensions: ['txt'] },
+        { name: 'Todos', extensions: ['*'] }
+      ]
+    });
+    
+    log.info('File selection dialog completed', { fileCount: result.filePaths?.length || 0 });
+    return result;
+  } catch (error) {
+    log.error('Error in select-files handler:', error);
+    return { canceled: true, filePaths: [] };
+  }
 });
 
 ipcMain.handle('select-folder', async () => {
-  const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ['openDirectory']
-  });
-  return result;
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory']
+    });
+    
+    log.info('Folder selection dialog completed');
+    return result;
+  } catch (error) {
+    log.error('Error in select-folder handler:', error);
+    return { canceled: true, filePaths: [] };
+  }
 });
 
 ipcMain.handle('save-file', async (event, options = {}) => {
-  const result = await dialog.showSaveDialog(mainWindow, {
-    filters: [
-      { name: 'CSV', extensions: ['csv'] },
-      { name: 'Excel', extensions: ['xlsx'] },
-      { name: 'Texto', extensions: ['txt'] }
-    ],
-    defaultPath: options.defaultPath || 'output'
-  });
-  return result;
+  try {
+    // Validate options
+    if (options && typeof options !== 'object') {
+      log.warn('Invalid options provided to save-file handler');
+      options = {};
+    }
+    
+    const defaultPath = validateString(options.defaultPath, 255) ? options.defaultPath : 'output';
+    
+    const result = await dialog.showSaveDialog(mainWindow, {
+      filters: [
+        { name: 'CSV', extensions: ['csv'] },
+        { name: 'Excel', extensions: ['xlsx'] },
+        { name: 'Texto', extensions: ['txt'] }
+      ],
+      defaultPath
+    });
+    
+    log.info('Save file dialog completed');
+    return result;
+  } catch (error) {
+    log.error('Error in save-file handler:', error);
+    return { canceled: true, filePath: '' };
+  }
 });
 
-// Enhanced file processing with streaming support
+// Enhanced file processing with streaming support and validation
 ipcMain.handle('process-files', async (event, options) => {
   try {
+    // Comprehensive input validation
+    if (!options || typeof options !== 'object') {
+      log.error('Invalid options provided to process-files');
+      return { success: false, message: 'Parâmetros inválidos fornecidos' };
+    }
+
+    // Validate file paths
+    if (!validateArray(options.filePaths, 50)) {
+      log.error('Invalid filePaths array');
+      return { success: false, message: 'Lista de arquivos inválida' };
+    }
+
+    // Validate each file path
+    for (const filePath of options.filePaths) {
+      if (!validateString(filePath, 500)) {
+        log.error('Invalid file path detected:', filePath);
+        return { success: false, message: 'Caminho de arquivo inválido detectado' };
+      }
+    }
+
+    // Validate operation type
+    const validOperations = ['merge', 'convert', 'split'];
+    if (!validOperations.includes(options.operation)) {
+      log.error('Invalid operation type:', options.operation);
+      return { success: false, message: 'Tipo de operação inválido' };
+    }
+
+    // Validate output path
+    if (!validateString(options.outputPath, 500)) {
+      log.error('Invalid output path:', options.outputPath);
+      return { success: false, message: 'Caminho de saída inválido' };
+    }
+
+    // Validate delimiter
+    if (options.delimiter && (!validateString(options.delimiter, 5) || options.delimiter.length > 3)) {
+      log.error('Invalid delimiter:', options.delimiter);
+      return { success: false, message: 'Delimitador inválido' };
+    }
+
     const fileSize = await fileProcessor.getTotalFileSize(options.filePaths);
     
     // Use streaming for files > 50MB
@@ -136,59 +230,138 @@ ipcMain.handle('process-files', async (event, options) => {
     }
   } catch (error) {
     log.error('Error processing files:', error);
-    return { success: false, message: `Erro: ${error.message}` };
+    
+    // Handle standardized errors
+    if (error.code && errorHandler.errorCodes[error.code]) {
+      return errorHandler.errorToResult(error);
+    }
+    
+    // Create standardized error for unknown errors
+    const standardError = errorHandler.createError(
+      errorHandler.errorCodes.PROCESSING_ERROR,
+      `File processing error: ${error.message}`,
+      error,
+      { operation: options.operation, fileCount: options.filePaths?.length }
+    );
+    
+    return errorHandler.errorToResult(standardError);
   }
 });
 
-// Theme management
+// Theme management with validation
 ipcMain.handle('set-theme', async (event, theme) => {
-  return await themeManager.setTheme(theme);
+  try {
+    const validThemes = ['light', 'dark', 'auto'];
+    if (!validThemes.includes(theme)) {
+      log.error('Invalid theme provided:', theme);
+      return { success: false, message: 'Tema inválido' };
+    }
+    
+    const result = await themeManager.setTheme(theme);
+    log.info('Theme updated successfully:', theme);
+    return result;
+  } catch (error) {
+    log.error('Error setting theme:', error);
+    return { success: false, message: 'Erro ao alterar tema' };
+  }
 });
 
 ipcMain.handle('get-theme', async () => {
-  return await themeManager.getTheme();
+  try {
+    return await themeManager.getTheme();
+  } catch (error) {
+    log.error('Error getting theme:', error);
+    return { current: 'light', available: ['light', 'dark', 'auto'] };
+  }
 });
 
-// File analysis for large files
+// File analysis with validation for large files
 ipcMain.handle('analyze-file', async (event, filePath) => {
   try {
+    if (!validateString(filePath, 500)) {
+      log.error('Invalid file path for analysis:', filePath);
+      return { error: 'Caminho de arquivo inválido' };
+    }
+
     if (streamingProcessor) {
       return await streamingProcessor.analyzeFile(filePath);
     }
     return await fileProcessor.analyzeFile(filePath);
   } catch (error) {
     log.error('Error analyzing file:', error);
-    return { error: error.message };
+    return { error: `Erro na análise: ${error.message}` };
   }
 });
 
-// Other existing handlers
+// Delimiter detection with validation
 ipcMain.handle('detect-delimiter', async (event, filePath) => {
-  return await fileProcessor.detectDelimiter(filePath);
-});
-
-ipcMain.handle('get-file-stats', async (event, filePath) => {
-  return await fileProcessor.getFileStats(filePath);
-});
-
-// Update handlers
-ipcMain.handle('check-for-updates', async () => {
-  if (updateManager) {
-    return await updateManager.checkForUpdates();
+  try {
+    if (!validateString(filePath, 500)) {
+      log.error('Invalid file path for delimiter detection:', filePath);
+      return { error: 'Caminho de arquivo inválido' };
+    }
+    
+    return await fileProcessor.detectDelimiter(filePath);
+  } catch (error) {
+    log.error('Error detecting delimiter:', error);
+    return { error: `Erro na detecção: ${error.message}` };
   }
-  return { available: false };
+});
+
+// File stats with validation
+ipcMain.handle('get-file-stats', async (event, filePath) => {
+  try {
+    if (!validateString(filePath, 500)) {
+      log.error('Invalid file path for stats:', filePath);
+      return { error: 'Caminho de arquivo inválido' };
+    }
+    
+    return await fileProcessor.getFileStats(filePath);
+  } catch (error) {
+    log.error('Error getting file stats:', error);
+    return { error: `Erro nas estatísticas: ${error.message}` };
+  }
+});
+
+// Update handlers with validation and error handling
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    if (updateManager) {
+      log.info('Checking for updates...');
+      return await updateManager.checkForUpdates();
+    }
+    log.warn('Update manager not available');
+    return { available: false, error: 'Gerenciador de atualizações não disponível' };
+  } catch (error) {
+    log.error('Error checking for updates:', error);
+    return { available: false, error: `Erro na verificação: ${error.message}` };
+  }
 });
 
 ipcMain.handle('download-update', async () => {
-  if (updateManager) {
-    return await updateManager.downloadUpdate();
+  try {
+    if (updateManager) {
+      log.info('Downloading update...');
+      return await updateManager.downloadUpdate();
+    }
+    log.warn('Update manager not available for download');
+    return { success: false, error: 'Gerenciador de atualizações não disponível' };
+  } catch (error) {
+    log.error('Error downloading update:', error);
+    return { success: false, error: `Erro no download: ${error.message}` };
   }
-  return { success: false };
 });
 
 ipcMain.handle('install-update', async () => {
-  if (updateManager) {
-    return await updateManager.installUpdate();
+  try {
+    if (updateManager) {
+      log.info('Installing update...');
+      return await updateManager.installUpdate();
+    }
+    log.warn('Update manager not available for installation');
+    return { success: false, error: 'Gerenciador de atualizações não disponível' };
+  } catch (error) {
+    log.error('Error installing update:', error);
+    return { success: false, error: `Erro na instalação: ${error.message}` };
   }
-  return { success: false };
 });

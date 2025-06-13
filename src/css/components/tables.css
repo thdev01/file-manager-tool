@@ -1,0 +1,27 @@
+/**
+ * Table Components
+ */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  text-align: left;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.table td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}

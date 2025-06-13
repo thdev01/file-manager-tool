@@ -1,0 +1,31 @@
+/**
+ * Progress Components
+ */
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.progress-bar {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  height: 8px;
+  flex: 1;
+}
+
+.progress-fill {
+  background: var(--color-primary);
+  height: 100%;
+  transition: width var(--transition-normal);
+  border-radius: var(--radius-full);
+}
+
+.progress-text {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  min-width: 3ch;
+}

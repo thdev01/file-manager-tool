@@ -54,7 +54,7 @@
     "electron-updater": "^6.3.9",
     "electron-log": "^5.2.0",
     "fs-extra": "^11.2.0",
-    "stream-transform": "^3.4.0"
+    "stream-transform": "^2.0.0"
   },
   "devDependencies": {
     "electron": "^28.3.3",

@@ -1015,3 +1015,257 @@ body {
         color 0.3s ease,
         box-shadow 0.3s ease !important;
 }
+/* Enhanced Focus Ring for Accessibility */
+:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+/* Enhanced Focus Ring for Buttons */
+.btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Missing UI State Classes for JavaScript Functionality */
+
+/* Selected State for Operation Cards */
+.selected {
+    border-color: var(--primary-color) !important;
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        rgba(99, 102, 241, 0.05) 100%);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    transform: translateY(-2px);
+}
+
+.operation-card.selected {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        rgba(99, 102, 241, 0.05) 100%);
+    box-shadow: var(--shadow-lg);
+}
+
+.operation-card.selected .btn {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Disabled State for UI Elements */
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.operation-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+}
+
+.operation-card.disabled .btn {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* Progress Bar Components */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--primary-color) 0%, 
+        var(--primary-hover) 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 3rem;
+    text-align: right;
+}
+
+/* Large Progress Bar for Loading */
+.loading-progress .progress-bar {
+    height: 12px;
+    margin: var(--spacing-md) 0;
+}
+
+.loading-progress .progress-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Theme Light Body Class */
+.theme-light {
+    --current-bg-primary: var(--bg-primary);
+    --current-bg-secondary: var(--bg-secondary);
+    --current-bg-tertiary: var(--bg-tertiary);
+    --current-text-primary: var(--text-primary);
+    --current-text-secondary: var(--text-secondary);
+    --current-border-color: var(--border-color);
+}
+
+/* Theme Dark Body Class */
+.theme-dark {
+    --current-bg-primary: var(--bg-dark);
+    --current-bg-secondary: #334155;
+    --current-bg-tertiary: #475569;
+    --current-text-primary: var(--text-white);
+    --current-text-secondary: #cbd5e1;
+    --current-border-color: #475569;
+    
+    background: var(--bg-dark);
+    color: var(--text-white);
+}
+
+.theme-dark .sidebar {
+    background: var(--bg-sidebar);
+    border-color: #475569;
+}
+
+.theme-dark .card {
+    background: #334155;
+    border-color: #475569;
+}
+
+.theme-dark .btn-ghost {
+    color: #cbd5e1;
+    border-color: #475569;
+}
+
+.theme-dark .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #64748b;
+}
+
+.theme-dark .form-input,
+.theme-dark .form-select {
+    background: #475569;
+    border-color: #64748b;
+    color: var(--text-white);
+}
+
+.theme-dark .file-card {
+    background: #475569;
+    border-color: #64748b;
+}
+
+.theme-dark .operation-card {
+    background: #475569;
+    border-color: #64748b;
+}
+
+.theme-dark .modal-content {
+    background: #334155;
+    color: var(--text-white);
+}
+
+/* Additional Progress Styles for Different Contexts */
+.progress-bar.small {
+    height: 4px;
+}
+
+.progress-bar.large {
+    height: 16px;
+}
+
+.progress-fill.success {
+    background: linear-gradient(90deg, 
+        var(--success-color) 0%, 
+        #16a34a 100%);
+}
+
+.progress-fill.warning {
+    background: linear-gradient(90deg, 
+        var(--warning-color) 0%, 
+        #d97706 100%);
+}
+
+.progress-fill.error {
+    background: linear-gradient(90deg, 
+        var(--danger-color) 0%, 
+        #dc2626 100%);
+}
+
+/* File Card Selection States */
+.file-card.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Button States for Better Interaction Feedback */
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn.disabled,
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn.disabled:hover,
+.btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Tab Active States */
+.nav-item.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.nav-item.active .nav-icon {
+    opacity: 1;
+}
+
+/* Enhanced Loading States */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.2) 50%, 
+        transparent 100%);
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}

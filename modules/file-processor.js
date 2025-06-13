@@ -3,6 +3,7 @@ const path = require('path');
 const XLSX = require('xlsx');
 const Papa = require('papaparse');
 const log = require('electron-log');
+const errorHandler = require('./error-handler');
 
 class FileProcessor {
   constructor() {
@@ -11,14 +12,27 @@ class FileProcessor {
 
   async getTotalFileSize(filePaths) {
     let totalSize = 0;
+    const errors = [];
     
     for (const filePath of filePaths) {
       try {
         const stats = fs.statSync(filePath);
         totalSize += stats.size;
       } catch (error) {
-        log.error(`Error getting file size for ${filePath}:`, error);
+        const standardError = errorHandler.handleFileSystemError(error, filePath, 'getTotalFileSize');
+        errors.push(standardError);
+        log.warn(`Skipping file due to error: ${filePath}`);
       }
+    }
+    
+    // If we have too many errors, throw
+    if (errors.length > 0 && errors.length === filePaths.length) {
+      throw errorHandler.createError(
+        errorHandler.errorCodes.FILE_NOT_FOUND,
+        'No files could be accessed',
+        null,
+        { errors: errors.length }
+      );
     }
     
     return totalSize;
@@ -30,19 +44,50 @@ class FileProcessor {
     log.info(`Processing ${filePaths.length} files with operation: ${operation}`);
     
     try {
-      switch (operation) {
-        case 'merge':
-          return await this.mergeFiles(event, filePaths, outputPath, delimiter);
-        case 'convert':
-          return await this.convertFiles(event, filePaths, outputPath, delimiter);
-        case 'split':
-          return await this.splitFiles(event, filePaths, outputPath, delimiter, splitOptions);
-        default:
-          throw new Error('Operação não suportada');
+      // Validate operation
+      const validOperations = ['merge', 'convert', 'split'];
+      if (!validOperations.includes(operation)) {
+        throw errorHandler.createError(
+          errorHandler.errorCodes.VALIDATION_ERROR,
+          `Invalid operation: ${operation}`,
+          null,
+          { operation, validOperations }
+        );
       }
+
+      // Validate file paths
+      if (!Array.isArray(filePaths) || filePaths.length === 0) {
+        throw errorHandler.createError(
+          errorHandler.errorCodes.VALIDATION_ERROR,
+          'No files provided for processing',
+          null,
+          { filePaths }
+        );
+      }
+
+      const wrappedMethod = errorHandler.wrapAsync(
+        this[operation === 'merge' ? 'mergeFiles' : operation === 'convert' ? 'convertFiles' : 'splitFiles'].bind(this),
+        { operation, fileCount: filePaths.length }
+      );
+
+      const result = await wrappedMethod(event, filePaths, outputPath, delimiter, splitOptions);
+      
+      log.info(`${operation} operation completed successfully`);
+      return result;
+
     } catch (error) {
-      log.error('File processing error:', error);
-      throw error;
+      // Convert to standardized error if not already
+      if (!error.code || !errorHandler.errorCodes[error.code]) {
+        const standardError = errorHandler.createError(
+          errorHandler.errorCodes.PROCESSING_ERROR,
+          `File processing failed: ${error.message}`,
+          error,
+          { operation, fileCount: filePaths.length }
+        );
+        return errorHandler.errorToResult(standardError);
+      }
+      
+      return errorHandler.errorToResult(error);
     }
   }
 

@@ -1,0 +1,25 @@
+/**
+ * Settings Features
+ */
+
+.settings-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}

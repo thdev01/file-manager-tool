@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { nativeTheme } = require('electron');
 const log = require('electron-log');
+const errorHandler = require('./error-handler');
 
 class ThemeManager {
   constructor(mainWindow) {

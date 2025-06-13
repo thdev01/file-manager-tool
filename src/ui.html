@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager Pro v3.0</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="theme-light">
@@ -476,7 +476,8 @@
     </div>
 
     <script>
-        const { ipcRenderer } = require('electron');
+        // Use secure API exposed through preload script
+        const electronAPI = window.electronAPI;
         
         let selectedFiles = [];
         let currentOperation = '';
@@ -528,7 +529,7 @@
             document.getElementById('splitByFiles').disabled = true;
             
             // Update version display
-            const version = require('./package.json').version;
+            const version = electronAPI.getVersion();
             document.getElementById('currentVersion').textContent = version;
         }
 
@@ -610,7 +611,7 @@
         // Theme Management
         async function loadTheme() {
             try {
-                const themeData = await ipcRenderer.invoke('get-theme');
+                const themeData = await electronAPI.getTheme();
                 currentTheme = themeData.current;
                 applyTheme(currentTheme);
                 themeSelect.value = currentTheme;
@@ -621,7 +622,7 @@
 
         async function setTheme(theme) {
             try {
-                const result = await ipcRenderer.invoke('set-theme', theme);
+                const result = await electronAPI.setTheme(theme);
                 if (result.success) {
                     currentTheme = theme;
                     applyTheme(theme);
@@ -651,12 +652,12 @@
             }
         }
 
-        // IPC Event Listeners
-        ipcRenderer.on('theme-changed', (event, data) => {
+        // IPC Event Listeners using secure API
+        electronAPI.onThemeChanged((data) => {
             applyTheme(data.theme);
         });
 
-        ipcRenderer.on('progress-update', (event, data) => {
+        electronAPI.onProgressUpdate((data) => {
             updateProgress(data.percentage || Math.round((data.current / data.total) * 100));
             
             if (data.current && data.total) {
@@ -664,11 +665,11 @@
             }
         });
 
-        ipcRenderer.on('update-status', (event, message) => {
+        electronAPI.onUpdateStatus((message) => {
             addUpdateLog(message);
         });
 
-        ipcRenderer.on('update-download-progress', (event, data) => {
+        electronAPI.onUpdateDownloadProgress((data) => {
             updateDownloadProgress(data);
         });
 
@@ -700,7 +701,7 @@
 
         // File Management
         async function selectFiles() {
-            const result = await ipcRenderer.invoke('select-files');
+            const result = await electronAPI.selectFiles();
             
             if (!result.canceled && result.filePaths.length > 0) {
                 selectedFiles = result.filePaths;
@@ -738,7 +739,7 @@
                 const fileExt = fileName.split('.').pop().toUpperCase();
                 
                 // Analyze file (enhanced for large files)
-                const stats = await ipcRenderer.invoke('analyze-file', filePath);
+                const stats = await electronAPI.analyzeFile(filePath);
                 fileStats.set(filePath, stats);
                 totalSize += stats.size || 0;
                 
@@ -872,7 +873,7 @@
             );
             
             if (csvFiles.length > 0) {
-                const result = await ipcRenderer.invoke('detect-delimiter', csvFiles[0]);
+                const result = await electronAPI.detectDelimiter(csvFiles[0]);
                 if (result && !result.error) {
                     currentDelimiter = result.delimiter;
                     displayPreview(result);
@@ -990,7 +991,7 @@
             
             if (currentOperation === 'split') {
                 // For split operation, select folder
-                result = await ipcRenderer.invoke('select-folder');
+                result = await electronAPI.selectFolder();
                 if (!result.canceled && result.filePaths.length > 0) {
                     outputPath = result.filePaths[0];
                     displayOutputPath();
@@ -1001,7 +1002,7 @@
                 const format = outputFormat.value;
                 const extension = format === 'csv' ? '.csv' : format === 'xlsx' ? '.xlsx' : '.txt';
                 
-                result = await ipcRenderer.invoke('save-file', {
+                result = await electronAPI.saveFile({
                     defaultPath: `output${extension}`
                 });
                 
@@ -1075,7 +1076,7 @@
             };
             
             try {
-                const result = await ipcRenderer.invoke('process-files', options);
+                const result = await electronAPI.processFiles(options);
                 
                 if (result.success) {
                     updateStatus(`✅ ${result.message}`, 'success');
@@ -1218,7 +1219,7 @@
         async function checkForUpdates() {
             try {
                 addUpdateLog('Verificando atualizações...');
-                const result = await ipcRenderer.invoke('check-for-updates');
+                const result = await electronAPI.checkForUpdates();
                 
                 if (result.available) {
                     document.getElementById('updateBadge').style.display = 'block';
@@ -1242,7 +1243,7 @@
                 document.getElementById('updateProgress').style.display = 'block';
                 document.getElementById('updateAvailable').style.display = 'none';
                 
-                const result = await ipcRenderer.invoke('download-update');
+                const result = await electronAPI.downloadUpdate();
                 
                 if (result.success) {
                     addUpdateLog('Download iniciado com sucesso');
@@ -1259,7 +1260,7 @@
         async function installUpdate() {
             try {
                 addUpdateLog('Instalando atualização...');
-                const result = await ipcRenderer.invoke('install-update');
+                const result = await electronAPI.installUpdate();
                 
                 if (result.success) {
                     addUpdateLog('Atualização será instalada após reiniciar');
